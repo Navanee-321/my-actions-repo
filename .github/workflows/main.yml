@@ -52,11 +52,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         
-      # Step 2: Build the project (e.g., create static files for GitHub Pages)
-      - name: Build the project
-        run: npm run build
-
-      # Step 3: Deploy to GitHub Pages
+      # Step 2: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -70,7 +66,6 @@ jobs:
     if: github.event_name == 'schedule'  # Ensure it only runs on cron
     steps:
       # Step 1: Checkout code
-      - name: Checkout code
         uses: actions/checkout@v2
 
       # Step 2: Backup data (for example, backup database or files)
@@ -90,19 +85,4 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for pushing changes
-
-  # Job 4: Use Secrets and Environment Variables (for example, for deployment)
-  deploy-with-secrets:
-    runs-on: ubuntu-latest
-    steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Step 2: Deploy with secrets (for example, push to a remote server)
-      - name: Deploy with secrets
-        run: |
-          echo "Deploying with secrets..."
-          # Example: Deploy code using an API key from secrets
-          curl -X POST -H "Authorization: Bearer ${{ secrets.API_KEY }}" https://example.com/deploy
 
