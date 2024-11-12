@@ -1,0 +1,32 @@
+name: CI Workflow
+
+# Trigger the workflow when code is pushed to the 'main' branch
+on:
+  push:
+    branches:
+      - main
+
+# Define the jobs that run as part of this workflow
+jobs:
+  build:
+    runs-on: ubuntu-latest  # This specifies the type of virtual machine to run the job on (Ubuntu in this case)
+
+    steps:
+      # Step 1: Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2  # This action checks out your repository so that subsequent steps can use it
+
+      # Step 2: Set up Node.js (assuming you're working with Node.js)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Specify the Node.js version you want to use
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm install  # This assumes your project has a package.json file and uses npm
+
+      # Step 4: Run tests
+      - name: Run tests
+        run: npm test  # This assumes your project has a test script in package.json
+
