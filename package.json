@@ -1,16 +1,23 @@
 {
-  "name": "your-project-name",
+  "name": "my-actions-repo",
   "version": "1.0.0",
+  "description": "",
+  "main": "sum.test.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "npm run lint && npm run test:unit",
-    "build": "your-build-command-here",  // <-- Add this line
-    "lint": "eslint .",
-    "test:unit": "jest"
+    "test": "jest"
   },
-  "dependencies": {
-    "express": "^4.17.1",
-    "jest": "^26.6.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Navanee-321/my-actions-repo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Navanee-321/my-actions-repo/issues"
+  },
+  "homepage": "https://github.com/Navanee-321/my-actions-repo#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
-
