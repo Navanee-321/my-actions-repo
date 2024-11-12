@@ -1,32 +1,108 @@
-name: CI Workflow
+name: Node.js CI and GitHub Pages Deployment
 
-# Trigger the workflow when code is pushed to the 'main' branch
+# Trigger the workflow on push, pull requests, and scheduled (cron) jobs
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on push to `main` branch
+  pull_request:
+    branches:
+      - main  # Trigger on PR targeting the `main` branch
+    types:
+      - opened      # Trigger when a PR is opened
+      - synchronize # Trigger when a PR is updated with new commits
+      - reopened    # Trigger when a PR is reopened
+  schedule:
+    # Cron job to run daily backups at midnight UTC
+    - cron: '0 0 * * *'  # This will run once per day at 00:00 UTC
 
-# Define the jobs that run as part of this workflow
 jobs:
-  build:
-    runs-on: ubuntu-latest  # This specifies the type of virtual machine to run the job on (Ubuntu in this case)
-
+  # Job 1: Run tests on multiple Node.js versions
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]  # Run tests on multiple versions of Node.js
     steps:
       # Step 1: Checkout the code from the repository
       - name: Checkout code
-        uses: actions/checkout@v2  # This action checks out your repository so that subsequent steps can use it
-
-      # Step 2: Set up Node.js (assuming you're working with Node.js)
+        uses: actions/checkout@v2
+        
+      # Step 2: Set up Node.js with the version from the matrix
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Specify the Node.js version you want to use
+          node-version: ${{ matrix.node-version }}  # Matrix version
 
       # Step 3: Install project dependencies
       - name: Install dependencies
-        run: npm install  # This assumes your project has a package.json file and uses npm
+        run: npm install
 
       # Step 4: Run tests
       - name: Run tests
-        run: npm test  # This assumes your project has a test script in package.json
+        run: npm test
+
+  # Job 2: Deploy to GitHub Pages (run only on the main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # Deploy only after tests pass
+    if: github.ref == 'refs/heads/main'  # Ensure it only deploys from the main branch
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      # Step 2: Build the project (e.g., create static files for GitHub Pages)
+      - name: Build the project
+        run: npm run build
+
+      # Step 3: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_dir: ./build  # Directory to publish to GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub token for authentication
+
+  # Job 3: Backup job (run daily via cron)
+  backup:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'  # Ensure it only runs on cron
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Backup data (for example, backup database or files)
+      - name: Backup data
+        run: |
+          echo "Starting backup process..."
+          # Your backup logic here, for example, saving data to cloud storage
+          # This could be a script to upload data to an S3 bucket or another service.
+          
+      # Step 3: Commit and push backup (if needed)
+      - name: Commit and push backup
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Automated backup"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for pushing changes
+
+  # Job 4: Use Secrets and Environment Variables (for example, for deployment)
+  deploy-with-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Deploy with secrets (for example, push to a remote server)
+      - name: Deploy with secrets
+        run: |
+          echo "Deploying with secrets..."
+          # Example: Deploy code using an API key from secrets
+          curl -X POST -H "Authorization: Bearer ${{ secrets.API_KEY }}" https://example.com/deploy
 
